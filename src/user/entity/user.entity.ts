@@ -1,19 +1,31 @@
-import { Column, Entity, ObjectID, ObjectIdColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  ObjectID,
+  ObjectIdColumn,
+} from 'typeorm';
+import { hash } from 'bcrypt';
 
 @Entity()
 export class User {
   @ObjectIdColumn()
   id: ObjectID;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: 1 })
   status: number;
 
-  @Column()
+  @Column({ default: 0 })
   role: number;
+
+  @BeforeInsert()
+  async hashPassword() {
+    this.password = await hash(this.password, 10);
+  }
 }
