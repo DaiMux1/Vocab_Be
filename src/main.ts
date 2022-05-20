@@ -1,1 +1,15 @@
-import { ValidationPipe } from '@nestjs/common';import { NestFactory } from '@nestjs/core';import { AppModule } from './app.module';import 'dotenv/config'async function bootstrap() {  console.log(process.env.URL_DB);  const app = await NestFactory.create(AppModule);  app.useGlobalPipes(new ValidationPipe());  const port = process.env.PORT || 5000;  await app.listen(port, () => {    console.log('App start with port', port);  });}bootstrap();
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.enableCors();
+  app.useGlobalPipes(new ValidationPipe());
+
+  const port = process.env.PORT || 5000;
+  await app.listen(port, () => {
+    console.log('App start with port', port);
+  });
+}
+bootstrap();

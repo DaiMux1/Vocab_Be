@@ -28,4 +28,5 @@ export class User {
   async hashPassword() {
     this.password = await hash(this.password, 10);
   }
+
 }

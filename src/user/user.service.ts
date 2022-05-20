@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MongoRepository } from 'typeorm';
 import { CreateUserDto } from './dtos/create-user.dto';
@@ -18,12 +22,7 @@ export class UserService {
     return await this.userRepo.save(user);
   }
 
-  async findAccount(username: string) {
-    console.log(username, "123");
-    
-    const r = await this.userRepo.find();
-    console.log(r);
-    return r;
-    
+  async findAccountByUsername(username: string) {
+    return await this.userRepo.findOne({ username });
   }
 }
