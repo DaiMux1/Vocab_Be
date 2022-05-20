@@ -13,6 +13,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import server from './config/server.config';
 import database from './config/database.config';
 import { AuthMiddleware } from './auth/auth.middleware';
+import { ListModule } from './list/list.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { AuthMiddleware } from './auth/auth.middleware';
     }),
     UserModule,
     AuthModule,
+    ListModule,
   ],
   controllers: [AppController],
   providers: [AppService],
