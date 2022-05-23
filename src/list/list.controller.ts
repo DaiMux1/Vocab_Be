@@ -1,7 +1,12 @@
-import { Body, Controller, Delete, Post, Put, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import { Role } from 'src/constant/role';
+import { RoleG } from 'src/guards/role.guard';
 import { CreateListDto } from './dtos/create-list.dto';
 import { DeleteVocabDto } from './dtos/delete-vocab.dto';
+import { HandleRequestPublicDto } from './dtos/handle-request-public.dto';
+import { SearchDto } from './dtos/search.dto';
 import { UpdateVocabDto } from './dtos/update-vocab.dto';
+import { VoteStarDto } from './dtos/vote-star.dto';
 import { ListService } from './list.service';
 
 @Controller('list')
@@ -26,5 +31,26 @@ export class ListController {
   @Put()
   updateVocab(@Req() req, @Body() body: UpdateVocabDto) {
     return this.listService.updateVocab(req.user, body)
+  }
+
+  @Get('search')
+  search(@Query() query: SearchDto) {
+    return this.listService.search(query)    
+  }
+
+  @Patch('star')
+  vote(@Req() req, @Body() body: VoteStarDto) {
+    return this.listService.voteStar(req.user, body)
+  }
+
+  @Post('request_public/:name')
+  requestPublic(@Req() req, @Param('name') name: string) {
+    return this.listService.requestPublic(req.user, name);
+  }
+
+  @RoleG(Role.Manager)
+  @Patch('handle_request_public')
+  handleRequestPublic(@Req() req, @Body() body: HandleRequestPublicDto) {
+    return this.listService.handleRequestPublic(req.user, body.name, body.statement)
   }
 }

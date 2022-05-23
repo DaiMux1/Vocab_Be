@@ -1,6 +1,7 @@
 import { Column, Entity, ObjectID, ObjectIdColumn } from 'typeorm';
 import { Person } from './person.entity';
 import { Vocab } from './vocab.entity';
+import { Voter } from './voter.entity';
 
 @Entity()
 export class List {
@@ -25,4 +26,6 @@ export class List {
   @Column()
   star: number;
 
+  @Column((type) => Voter)
+  voters: Voter[]
 }

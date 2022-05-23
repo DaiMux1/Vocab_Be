@@ -14,6 +14,7 @@ import server from './config/server.config';
 import database from './config/database.config';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { ListModule } from './list/list.module';
+import { PublicGateway } from './gateways/public.gateways';
 
 @Module({
   imports: [
@@ -37,7 +38,7 @@ import { ListModule } from './list/list.module';
     ListModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PublicGateway],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

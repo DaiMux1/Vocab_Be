@@ -1,15 +1,22 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MongoRepository } from 'typeorm';
+import { StatusRequestPublic } from 'src/constant/status-request-public';
+import { Like, MongoRepository } from 'typeorm';
 import { CreateListDto } from './dtos/create-list.dto';
 import { DeleteVocabDto } from './dtos/delete-vocab.dto';
+import { SearchDto } from './dtos/search.dto';
 import { UpdateVocabDto } from './dtos/update-vocab.dto';
+import { VoteStarDto } from './dtos/vote-star.dto';
 import { List } from './entity/list.entity';
+import { RequestPublic } from './entity/request.entity';
 
 @Injectable()
 export class ListService {
   constructor(
-    @InjectRepository(List) private listRepo: MongoRepository<List>,
+    @InjectRepository(List)
+    private listRepo: MongoRepository<List>,
+    @InjectRepository(RequestPublic)
+    private reqPublicRepo: MongoRepository<RequestPublic>,
   ) {}
 
   async create(user, body: CreateListDto) {
@@ -84,7 +91,100 @@ export class ListService {
         v.meaning === body.oldVocab.meaning,
     );
 
-    list.vocab[vocabIndex] = {...list.vocab[vocabIndex], ...body.newVocab}
+    list.vocab[vocabIndex] = { ...list.vocab[vocabIndex], ...body.newVocab };
+
+    return await this.listRepo.save(list);
+  }
+
+  async search(query: SearchDto) {
+    return await this.listRepo.find({
+      where: {
+        name: { $regex: new RegExp(query.name, 'i') },
+        'author.username': { $regex: new RegExp(query.author, 'i') },
+      },
+    });
+  }
+
+  async voteStar(user, body: VoteStarDto) {
+    const list = await this.listRepo.findOne({ name: body.name });
+    if (!list) {
+      throw new BadRequestException('List not found');
+    }
+
+    list.voters = list.voters || [];
+
+    const voterIndex = list.voters.findIndex(
+      (v) => v.username === user.username,
+    );
+    if (voterIndex === -1) {
+      list.voters.push({
+        ...user,
+        star: body.star,
+      });
+    } else {
+      list.voters[voterIndex] = { ...list.voters[voterIndex], star: body.star };
+    }
+
+    list.star = list.star || 0;
+    list.star =
+      list.voters.reduce((pre, cur) => (pre += cur.star), 0) /
+      list.voters.length;
+
+    await this.listRepo.save(list);
+    return list;
+  }
+
+  async requestPublic(user, name: string) {
+    const list = await this.listRepo.findOne({
+      where: {
+        name: name,
+        'author.username': user.username,
+      },
+    });
+    if (!list) {
+      throw new BadRequestException('You have not this list');
+    }
+
+    let request = await this.reqPublicRepo.findOne({
+      listName: name,
+      status: StatusRequestPublic.Pending,
+    });
+    if (request) {
+      throw new BadRequestException('List is pending');
+    }
+
+    request = this.reqPublicRepo.create({
+      listName: name,
+      moderater: '',
+      status: StatusRequestPublic.Pending,
+      author: user.username,
+    });
+    return await this.reqPublicRepo.save(request);
+  }
+
+  async handleRequestPublic(user, name: string, status: StatusRequestPublic) {
+    const request = await this.reqPublicRepo.findOne({
+      listName: name,
+      status: StatusRequestPublic.Pending,
+    });
+    if (!request) {
+      throw new BadRequestException('Request not found');
+    }
+
+    request.status = status;
+    request.moderater = user.username;
+    await this.reqPublicRepo.save(request)
+
+    const list = await this.listRepo.findOne({
+      where: {
+        name: request.listName,
+        'author.username': request.author,
+      },
+    });
+
+    console.log(list);
+    
+    list.public = 1;
 
     return await this.listRepo.save(list);
   }
