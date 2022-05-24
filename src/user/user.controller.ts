@@ -17,4 +17,16 @@ export class UserController {
   addManager(@Param('username') username: string) {
     return this.userService.addManager(username)
   }
+
+  @RoleG(Role.SuperAdmin) 
+  @Patch('ban/:username')
+  ban(@Param('username') username: string) {
+    return this.userService.ban(username)
+  }
+
+  @RoleG(Role.SuperAdmin) 
+  @Patch('unban/:username')
+  unban(@Param('username') username: string) {
+    return this.userService.unban(username)
+  }
 }

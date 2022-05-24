@@ -6,9 +6,11 @@ import { CreateListDto } from './dtos/create-list.dto';
 import { DeleteVocabDto } from './dtos/delete-vocab.dto';
 import { SearchDto } from './dtos/search.dto';
 import { UpdateVocabDto } from './dtos/update-vocab.dto';
+import { VocabDto } from './dtos/vocab.dto';
 import { VoteStarDto } from './dtos/vote-star.dto';
 import { List } from './entity/list.entity';
-import { RequestPublic } from './entity/request.entity';
+import { RequestContributor } from './entity/request-comtributor.entity';
+import { RequestPublic } from './entity/request-public.entity';
 
 @Injectable()
 export class ListService {
@@ -17,6 +19,8 @@ export class ListService {
     private listRepo: MongoRepository<List>,
     @InjectRepository(RequestPublic)
     private reqPublicRepo: MongoRepository<RequestPublic>,
+    @InjectRepository(RequestContributor)
+    private reqContributorRepo: MongoRepository<RequestContributor>,
   ) {}
 
   async create(user, body: CreateListDto) {
@@ -173,7 +177,9 @@ export class ListService {
 
     request.status = status;
     request.moderater = user.username;
-    await this.reqPublicRepo.save(request)
+    await this.reqPublicRepo.save(request);
+
+    if (status === StatusRequestPublic.Rejected) return
 
     const list = await this.listRepo.findOne({
       where: {
@@ -182,10 +188,59 @@ export class ListService {
       },
     });
 
-    console.log(list);
-    
     list.public = 1;
 
     return await this.listRepo.save(list);
+  }
+
+  async requestContributor(user, name: string, vocab: VocabDto[]) {
+    const list = await this.listRepo.findOne({
+      where: {
+        name: name,
+      },
+    });
+    if (!list) {
+      throw new BadRequestException('List not found');
+    }
+
+
+    const request = this.reqContributorRepo.create({
+      listName: name,
+      status: StatusRequestPublic.Pending,
+      author: list.author.username,
+      contributor: user,
+      vocab: vocab,
+    });
+    request.vocab = vocab;
+    return await this.reqContributorRepo.save(request);
+  }
+
+  async handleRequestContributor(user, name: string, status: StatusRequestPublic) {
+    const request = await this.reqContributorRepo.findOne({
+      listName: name,
+      author: user.username,
+      status: StatusRequestPublic.Pending,
+    });
+    if (!request) {
+      throw new BadRequestException('Request not found');
+    }
+
+    request.status = status;
+    await this.reqContributorRepo.save(request);
+
+    if (status === StatusRequestPublic.Rejected) return
+
+    const list = await this.listRepo.findOne({
+      where: {
+        name: request.listName,
+        'author.username': request.author,
+      },
+    });
+
+    list.vocab.push(...request.vocab);
+    list.contributor = list.contributor || [];
+    list.contributor.push(request.contributor)
+    return await this.listRepo.save(list);
+
   }
 }

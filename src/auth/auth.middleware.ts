@@ -13,6 +13,7 @@ export class AuthMiddleware implements NestMiddleware {
     const token = req.header('Authorization');
     try {
       const user = await this.jwtService.verify(token);
+      delete user.iat;
       req.user = user;
       next();
     } catch (e) {
