@@ -1,4 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+} from '@nestjs/common';
 import { Role } from 'src/constant/role';
 import { RoleG } from 'src/guards/role.guard';
 import { RequestContributorDto } from './dtos/create-contributor.dto';
@@ -25,23 +36,33 @@ export class ListController {
   }
 
   @Delete()
+  removeList(@Req() req, @Body() id: string) {
+    return this.listService.removeList(req.user, id);
+  }
+
+  @Delete('/vocab')
   removeVocab(@Req() req, @Body() body: DeleteVocabDto) {
-    return this.listService.removeVocab(req.user, body)
+    return this.listService.removeVocab(req.user, body);
   }
 
   @Put()
   updateVocab(@Req() req, @Body() body: UpdateVocabDto) {
-    return this.listService.updateVocab(req.user, body)
+    return this.listService.updateVocab(req.user, body);
+  }
+
+  @Get('my-list')
+  getMyList(@Req() req, @Query('search') search: string) {
+    return this.listService.getMyList(req.user, search);
   }
 
   @Get('search')
   search(@Query() query: SearchDto) {
-    return this.listService.search(query)    
+    return this.listService.search(query);
   }
 
   @Patch('star')
   vote(@Req() req, @Body() body: VoteStarDto) {
-    return this.listService.voteStar(req.user, body)
+    return this.listService.voteStar(req.user, body);
   }
 
   @Post('request_public/:name')
@@ -52,16 +73,24 @@ export class ListController {
   @RoleG(Role.Manager)
   @Patch('handle_request_public')
   handleRequestPublic(@Req() req, @Body() body: HandleRequestPublicDto) {
-    return this.listService.handleRequestPublic(req.user, body.name, body.statement)
+    return this.listService.handleRequestPublic(
+      req.user,
+      body.name,
+      body.statement,
+    );
   }
 
   @Post('request_contributor')
   requestContributor(@Req() req, @Body() body: RequestContributorDto) {
-    return this.listService.requestContributor(req.user, body.name, body.vocab)
+    return this.listService.requestContributor(req.user, body.name, body.vocab);
   }
 
   @Patch('handle_request_contributor')
   handleRequestContributor(@Req() req, @Body() body: HandleRequestPublicDto) {
-    return this.listService.handleRequestContributor(req.user, body.name, body.statement)
+    return this.listService.handleRequestContributor(
+      req.user,
+      body.name,
+      body.statement,
+    );
   }
 }
