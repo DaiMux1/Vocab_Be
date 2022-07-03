@@ -1,11 +1,17 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class SearchDto {
   @IsOptional()
   @IsString()
-  name?: string;
+  name: string;
 
   @IsOptional()
   @IsString()
   author?: string;
+
+  @IsString()
+  page: string;
+
+  @IsString()
+  perPage: string;
 }

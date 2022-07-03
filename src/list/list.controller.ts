@@ -10,6 +10,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
+import { clearConfigCache } from 'prettier';
 import { Role } from 'src/constant/role';
 import { RoleG } from 'src/guards/role.guard';
 import { RequestContributorDto } from './dtos/create-contributor.dto';
@@ -17,6 +18,7 @@ import { CreateListDto } from './dtos/create-list.dto';
 import { DeleteVocabDto } from './dtos/delete-vocab.dto';
 import { HandleRequestPublicDto } from './dtos/handle-request-public.dto';
 import { SearchDto } from './dtos/search.dto';
+import { UpdateNameList } from './dtos/update-name-list.dto';
 import { UpdateVocabDto } from './dtos/update-vocab.dto';
 import { VoteStarDto } from './dtos/vote-star.dto';
 import { ListService } from './list.service';
@@ -35,19 +37,24 @@ export class ListController {
     return this.listService.addVocab(req.user, body);
   }
 
-  @Delete()
-  removeList(@Req() req, @Body() id: string) {
-    return this.listService.removeList(req.user, id);
-  }
-
-  @Delete('/vocab')
+  @Put('/vocab')
   removeVocab(@Req() req, @Body() body: DeleteVocabDto) {
     return this.listService.removeVocab(req.user, body);
   }
 
-  @Put()
+  @Delete('/:id')
+  removeList(@Req() req, @Param('id') id: string) {
+    return this.listService.removeList(req.user, id);
+  }
+
+  @Put('/vocab-update')
   updateVocab(@Req() req, @Body() body: UpdateVocabDto) {
     return this.listService.updateVocab(req.user, body);
+  }
+
+  @Put()
+  updateList(@Req() req, @Body() body: UpdateNameList) {
+    return this.listService.updateList(req.user, body);
   }
 
   @Get('my-list')
@@ -55,9 +62,15 @@ export class ListController {
     return this.listService.getMyList(req.user, search);
   }
 
-  @Get('search')
+  @Get('search-public')
   search(@Query() query: SearchDto) {
     return this.listService.search(query);
+  }
+
+  @Get('/:id')
+  find(@Req() req, @Param('id') id: string) {
+    console.log('eeeee');
+    return this.listService.findById(req.user, id);
   }
 
   @Patch('star')

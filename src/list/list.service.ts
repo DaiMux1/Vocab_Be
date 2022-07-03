@@ -12,6 +12,8 @@ import { List } from './entity/list.entity';
 import { RequestContributor } from './entity/request-comtributor.entity';
 import { RequestPublic } from './entity/request-public.entity';
 import { ObjectID } from 'mongodb';
+import { UpdateNameList } from './dtos/update-name-list.dto';
+import { clearConfigCache } from 'prettier';
 
 @Injectable()
 export class ListService {
@@ -50,6 +52,15 @@ export class ListService {
     });
   }
 
+  async findById(user, id: string) {
+    return await this.listRepo.findOne({
+      where: {
+        _id: new ObjectID(id),
+        'author.username': { $regex: new RegExp(user.username, 'i') },
+      },
+    });
+  }
+
   async addVocab(user, body: CreateListDto) {
     const list = await this.listRepo.findOne({
       where: {
@@ -67,20 +78,17 @@ export class ListService {
   }
 
   async removeList(user, id: string) {
-    console.log(new ObjectID());
-
     const list = await this.listRepo.findOne({
       where: {
-        id: new ObjectID(id),
+        _id: new ObjectID(id),
         'author.username': user.username,
       },
     });
-
     if (!list) {
       throw new BadRequestException('You have not this list');
     }
 
-    return await this.listRepo.deleteOne({ _id: id });
+    return await this.listRepo.deleteOne({ _id: new ObjectID(id) });
   }
 
   async removeVocab(user, body: DeleteVocabDto) {
@@ -94,12 +102,29 @@ export class ListService {
     if (!list) {
       throw new BadRequestException('You have not this list');
     }
+
     list.vocab = list.vocab.filter(
       (v) =>
         v.word !== body.vocab.word ||
         v.example !== body.vocab.example ||
         v.meaning !== body.vocab.meaning,
     );
+
+    return await this.listRepo.save(list);
+  }
+
+  async updateList(user, body: UpdateNameList) {
+    const list = await this.listRepo.findOne({
+      where: {
+        _id: new ObjectID(body.id),
+        'author.username': user.username,
+      },
+    });
+    if (!list) {
+      throw new BadRequestException('You have not this list');
+    }
+
+    list.name = body.newName;
 
     return await this.listRepo.save(list);
   }
@@ -128,11 +153,34 @@ export class ListService {
   }
 
   async search(query: SearchDto) {
+    console.log(query);
+    console.log('first');
+    // const lists = await this.listRepo.find({
+    //   where: {
+    //     public: 1,
+    //   },
+    // });
+    // const nameRegex = new RegExp(query.name, 'g');
+    // console.log(nameRegex);
+    // console.log(lists.filter((list) => list.name.match(nameRegex)));
+
+    // lists.map((list) => {
+    //   if (list.name.match(nameRegex)) {
+    //     console.log(list);
+    //   }
+    // });
+
+    // return lists.filter((list) => list.name.match(nameRegex));
+    // console.log(query);
+    // console.log(new RegExp(query.name, 'i'));
     return await this.listRepo.find({
       where: {
         name: { $regex: new RegExp(query.name, 'i') },
         'author.username': { $regex: new RegExp(query.author, 'i') },
+        public: 1,
       },
+      skip: (Number(query.page) - 1) * Number(query.perPage),
+      take: Number(query.perPage),
     });
   }
 
