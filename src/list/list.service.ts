@@ -153,26 +153,6 @@ export class ListService {
   }
 
   async search(query: SearchDto) {
-    console.log(query);
-    console.log('first');
-    // const lists = await this.listRepo.find({
-    //   where: {
-    //     public: 1,
-    //   },
-    // });
-    // const nameRegex = new RegExp(query.name, 'g');
-    // console.log(nameRegex);
-    // console.log(lists.filter((list) => list.name.match(nameRegex)));
-
-    // lists.map((list) => {
-    //   if (list.name.match(nameRegex)) {
-    //     console.log(list);
-    //   }
-    // });
-
-    // return lists.filter((list) => list.name.match(nameRegex));
-    // console.log(query);
-    // console.log(new RegExp(query.name, 'i'));
     return await this.listRepo.find({
       where: {
         name: { $regex: new RegExp(query.name, 'i') },

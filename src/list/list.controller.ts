@@ -69,7 +69,6 @@ export class ListController {
 
   @Get('/:id')
   find(@Req() req, @Param('id') id: string) {
-    console.log('eeeee');
     return this.listService.findById(req.user, id);
   }
 
