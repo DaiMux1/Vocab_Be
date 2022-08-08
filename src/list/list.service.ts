@@ -56,7 +56,7 @@ export class ListService {
     return await this.listRepo.findOne({
       where: {
         _id: new ObjectID(id),
-        'author.username': { $regex: new RegExp(user.username, 'i') },
+        // 'author.username': { $regex: new RegExp(user.username, 'i') },
       },
     });
   }
