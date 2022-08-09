@@ -6,7 +6,7 @@ export class RequestPublic {
   id: ObjectID;
 
   @Column()
-  listName: string;
+  listId: string;
 
   @Column()
   author: string;

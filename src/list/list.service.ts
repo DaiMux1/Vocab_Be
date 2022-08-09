@@ -193,10 +193,13 @@ export class ListService {
     return list;
   }
 
-  async requestPublic(user, name: string) {
+  async requestPublic(user, id: string) {
+    console.log('new ObjectID(id)', new ObjectID(id));
+    console.log('user.username', user.username);
+
     const list = await this.listRepo.findOne({
       where: {
-        name: name,
+        _id: new ObjectID(id),
         'author.username': user.username,
       },
     });
@@ -204,8 +207,12 @@ export class ListService {
       throw new BadRequestException('You have not this list');
     }
 
+    // update list = 1 la state requested
+    list.public = 1;
+    await this.listRepo.save(list);
+
     let request = await this.reqPublicRepo.findOne({
-      listName: name,
+      listId: id,
       status: StatusRequestPublic.Pending,
     });
     if (request) {
@@ -213,7 +220,7 @@ export class ListService {
     }
 
     request = this.reqPublicRepo.create({
-      listName: name,
+      listId: id,
       moderater: '',
       status: StatusRequestPublic.Pending,
       author: user.username,
@@ -221,9 +228,9 @@ export class ListService {
     return await this.reqPublicRepo.save(request);
   }
 
-  async handleRequestPublic(user, name: string, status: StatusRequestPublic) {
+  async handleRequestPublic(user, listId: string, status: StatusRequestPublic) {
     const request = await this.reqPublicRepo.findOne({
-      listName: name,
+      listId,
       status: StatusRequestPublic.Pending,
     });
     if (!request) {
@@ -234,16 +241,9 @@ export class ListService {
     request.moderater = user.username;
     await this.reqPublicRepo.save(request);
 
-    if (status === StatusRequestPublic.Rejected) return;
+    const list = await this.listRepo.findOne(listId);
 
-    const list = await this.listRepo.findOne({
-      where: {
-        name: request.listName,
-        'author.username': request.author,
-      },
-    });
-
-    list.public = 1;
+    list.public = status === 1 ? 0 : 2;
 
     return await this.listRepo.save(list);
   }

@@ -77,9 +77,9 @@ export class ListController {
     return this.listService.voteStar(req.user, body);
   }
 
-  @Post('request_public/:name')
-  requestPublic(@Req() req, @Param('name') name: string) {
-    return this.listService.requestPublic(req.user, name);
+  @Post('request_public/:id')
+  requestPublic(@Req() req, @Param('id') id: string) {
+    return this.listService.requestPublic(req.user, id);
   }
 
   @RoleG(Role.Manager)
@@ -87,7 +87,7 @@ export class ListController {
   handleRequestPublic(@Req() req, @Body() body: HandleRequestPublicDto) {
     return this.listService.handleRequestPublic(
       req.user,
-      body.name,
+      body.listId,
       body.statement,
     );
   }
@@ -97,12 +97,12 @@ export class ListController {
     return this.listService.requestContributor(req.user, body.name, body.vocab);
   }
 
-  @Patch('handle_request_contributor')
-  handleRequestContributor(@Req() req, @Body() body: HandleRequestPublicDto) {
-    return this.listService.handleRequestContributor(
-      req.user,
-      body.name,
-      body.statement,
-    );
-  }
+  // @Patch('handle_request_contributor')
+  // handleRequestContributor(@Req() req, @Body() body: HandleRequestPublicDto) {
+  //   return this.listService.handleRequestContributor(
+  //     req.user,
+  //     body.name,
+  //     body.statement,
+  //   );
+  // }
 }
