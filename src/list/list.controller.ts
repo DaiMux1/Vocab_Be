@@ -67,6 +67,12 @@ export class ListController {
     return this.listService.search(query);
   }
 
+  @Get('request_public')
+  getRequestPublic() {
+    console.log('get request_public');
+    return this.listService.findRequestPublic();
+  }
+
   @Get('/:id')
   find(@Req() req, @Param('id') id: string) {
     return this.listService.findById(req.user, id);
@@ -82,8 +88,13 @@ export class ListController {
     return this.listService.requestPublic(req.user, id);
   }
 
+  // @Get('request_public')
+  // getRequestPublic() {
+  //   return this.listService.findRequestPublic();
+  // }
+
   @RoleG(Role.Manager)
-  @Patch('handle_request_public')
+  @Post('handle_request_public')
   handleRequestPublic(@Req() req, @Body() body: HandleRequestPublicDto) {
     return this.listService.handleRequestPublic(
       req.user,

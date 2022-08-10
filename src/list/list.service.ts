@@ -157,7 +157,7 @@ export class ListService {
       where: {
         name: { $regex: new RegExp(query.name, 'i') },
         'author.username': { $regex: new RegExp(query.author, 'i') },
-        public: 1,
+        public: 2,
       },
       skip: (Number(query.page) - 1) * Number(query.perPage),
       take: Number(query.perPage),
@@ -299,5 +299,13 @@ export class ListService {
     list.contributor = list.contributor || [];
     list.contributor.push(request.contributor);
     return await this.listRepo.save(list);
+  }
+
+  async findRequestPublic() {
+    console.log('findRequestPublic');
+
+    return await this.reqPublicRepo.find({
+      status: StatusRequestPublic.Pending,
+    });
   }
 }
