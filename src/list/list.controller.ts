@@ -16,6 +16,7 @@ import { RoleG } from 'src/guards/role.guard';
 import { RequestContributorDto } from './dtos/create-contributor.dto';
 import { CreateListDto } from './dtos/create-list.dto';
 import { DeleteVocabDto } from './dtos/delete-vocab.dto';
+import { HandleRequestContributorDto } from './dtos/handle-request-contributor.dto';
 import { HandleRequestPublicDto } from './dtos/handle-request-public.dto';
 import { SearchDto } from './dtos/search.dto';
 import { UpdateNameList } from './dtos/update-name-list.dto';
@@ -73,6 +74,16 @@ export class ListController {
     return this.listService.findRequestPublic();
   }
 
+  @Get('request_contributor/:id')
+  getOneRequestContributor(@Req() req, @Param('id') id: string) {
+    return this.listService.findOneRequestContributor(req.user, id);
+  }
+
+  @Get('request_contributor')
+  getAllRequestContributor(@Req() req) {
+    return this.listService.findRequestContributor(req.user);
+  }
+
   @Get('/:id')
   find(@Req() req, @Param('id') id: string) {
     return this.listService.findById(req.user, id);
@@ -105,15 +116,22 @@ export class ListController {
 
   @Post('request_contributor')
   requestContributor(@Req() req, @Body() body: RequestContributorDto) {
-    return this.listService.requestContributor(req.user, body.name, body.vocab);
+    return this.listService.requestContributor(
+      req.user,
+      body.listId,
+      body.vocab,
+    );
   }
 
-  // @Patch('handle_request_contributor')
-  // handleRequestContributor(@Req() req, @Body() body: HandleRequestPublicDto) {
-  //   return this.listService.handleRequestContributor(
-  //     req.user,
-  //     body.name,
-  //     body.statement,
-  //   );
-  // }
+  @Post('handle_request_contributor')
+  handleRequestContributor(
+    @Req() req,
+    @Body() body: HandleRequestContributorDto,
+  ) {
+    return this.listService.handleRequestContributor(
+      req.user,
+      body.id,
+      body.statement,
+    );
+  }
 }

@@ -8,7 +8,7 @@ export class RequestContributor {
   id: ObjectID;
 
   @Column()
-  listName: string;
+  listId: string;
 
   @Column()
   author: string;

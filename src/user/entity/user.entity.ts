@@ -24,9 +24,11 @@ export class User {
   @Column({ default: 0 })
   role: number;
 
+  @Column()
+  favoritesList: string[];
+
   @BeforeInsert()
   async hashPassword() {
     this.password = await hash(this.password, 10);
   }
-
 }

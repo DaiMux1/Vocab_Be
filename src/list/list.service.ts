@@ -194,9 +194,6 @@ export class ListService {
   }
 
   async requestPublic(user, id: string) {
-    console.log('new ObjectID(id)', new ObjectID(id));
-    console.log('user.username', user.username);
-
     const list = await this.listRepo.findOne({
       where: {
         _id: new ObjectID(id),
@@ -248,10 +245,10 @@ export class ListService {
     return await this.listRepo.save(list);
   }
 
-  async requestContributor(user, name: string, vocab: VocabDto[]) {
+  async requestContributor(user, listId: string, vocab: VocabDto[]) {
     const list = await this.listRepo.findOne({
       where: {
-        name: name,
+        _id: new ObjectID(listId),
       },
     });
     if (!list) {
@@ -259,7 +256,7 @@ export class ListService {
     }
 
     const request = this.reqContributorRepo.create({
-      listName: name,
+      listId: listId,
       status: StatusRequestPublic.Pending,
       author: list.author.username,
       contributor: user,
@@ -271,13 +268,13 @@ export class ListService {
 
   async handleRequestContributor(
     user,
-    name: string,
+    id: string,
     status: StatusRequestPublic,
   ) {
     const request = await this.reqContributorRepo.findOne({
-      listName: name,
-      author: user.username,
-      status: StatusRequestPublic.Pending,
+      where: {
+        _id: new ObjectID(id),
+      },
     });
     if (!request) {
       throw new BadRequestException('Request not found');
@@ -290,8 +287,7 @@ export class ListService {
 
     const list = await this.listRepo.findOne({
       where: {
-        name: request.listName,
-        'author.username': request.author,
+        _id: new ObjectID(request.listId),
       },
     });
 
@@ -302,10 +298,35 @@ export class ListService {
   }
 
   async findRequestPublic() {
-    console.log('findRequestPublic');
-
     return await this.reqPublicRepo.find({
       status: StatusRequestPublic.Pending,
     });
+  }
+
+  async findRequestContributor(user) {
+    return await this.reqContributorRepo.find({
+      author: user.username,
+      status: StatusRequestPublic.Pending,
+    });
+  }
+
+  async findOneRequestContributor(user, contributorId) {
+    const requestContributor = await this.reqContributorRepo.findOne({
+      where: {
+        _id: new ObjectID(contributorId),
+      },
+    });
+
+    if (!requestContributor) {
+      throw new BadRequestException('Request not found');
+    }
+
+    const list = await this.listRepo.findOne({
+      where: {
+        _id: new ObjectID(requestContributor.listId),
+      },
+    });
+
+    return { requestContributor, list };
   }
 }

@@ -5,8 +5,8 @@ import { VocabDto } from './vocab.dto';
 
 export class RequestContributorDto {
   @IsString()
-  @IsNotEmpty({ message: 'name is not empty' })
-  name: string;
+  @IsNotEmpty({ message: 'listId is not empty' })
+  listId: string;
 
   @IsArray()
   @ValidateNested({ each: true })

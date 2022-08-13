@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Patch, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Req } from '@nestjs/common';
 import { Role } from 'src/constant/role';
 import { RoleG } from 'src/guards/role.guard';
 import { UserService } from './user.service';
@@ -15,18 +15,28 @@ export class UserController {
   @RoleG(Role.SuperAdmin)
   @Patch('/add_manager/:username')
   addManager(@Param('username') username: string) {
-    return this.userService.addManager(username)
+    return this.userService.addManager(username);
   }
 
-  @RoleG(Role.SuperAdmin) 
+  @RoleG(Role.SuperAdmin)
   @Patch('ban/:username')
   ban(@Param('username') username: string) {
-    return this.userService.ban(username)
+    return this.userService.ban(username);
   }
 
-  @RoleG(Role.SuperAdmin) 
+  @RoleG(Role.SuperAdmin)
   @Patch('unban/:username')
   unban(@Param('username') username: string) {
-    return this.userService.unban(username)
+    return this.userService.unban(username);
+  }
+
+  @Post('/add-favorites-list')
+  addFavoriteList(@Req() req, @Body('listId') listId: string) {
+    return this.userService.addFavoriteList(req.user, listId);
+  }
+
+  @Get('/my-favorites-list')
+  getMyFavoritesList(@Req() req) {
+    return this.userService.getMyFavoritesList(req.user);
   }
 }

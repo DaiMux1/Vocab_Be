@@ -63,4 +63,33 @@ export class UserService {
     user.status = UserStatus.Active;
     return await this.userRepo.save(user);
   }
+
+  async addFavoriteList(user, listId) {
+    const u = await this.userRepo.findOne({ username: user.username });
+    if (!u) {
+      throw new BadRequestException('Username not found');
+    }
+
+    if (!u.favoritesList) {
+      u.favoritesList = [];
+    }
+
+    if (!u.favoritesList.includes(listId)) {
+      u.favoritesList.push(listId);
+    }
+
+    return await this.userRepo.save(u);
+  }
+
+  async getMyFavoritesList(user) {
+    console.log('user', user);
+    const u = await this.userRepo.findOne({ username: user.username });
+    if (!u) {
+      throw new BadRequestException('Username not found');
+    }
+    if (!u.favoritesList) {
+      return [];
+    }
+    return u.favoritesList;
+  }
 }
