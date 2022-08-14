@@ -35,8 +35,14 @@ export class UserController {
     return this.userService.addFavoriteList(req.user, listId);
   }
 
+  @Post('/remove-favorites-list')
+  removeFavoriteList(@Req() req, @Body('listId') listId: string) {
+    return this.userService.removeFavoriteList(req.user, listId);
+  }
+
   @Get('/my-favorites-list')
   getMyFavoritesList(@Req() req) {
+    console.log('my-favorites-list');
     return this.userService.getMyFavoritesList(req.user);
   }
 }

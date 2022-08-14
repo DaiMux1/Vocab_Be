@@ -14,6 +14,7 @@ import { RequestPublic } from './entity/request-public.entity';
 import { ObjectID } from 'mongodb';
 import { UpdateNameList } from './dtos/update-name-list.dto';
 import { clearConfigCache } from 'prettier';
+import { User } from 'src/user/entity/user.entity';
 
 @Injectable()
 export class ListService {
@@ -24,6 +25,8 @@ export class ListService {
     private reqPublicRepo: MongoRepository<RequestPublic>,
     @InjectRepository(RequestContributor)
     private reqContributorRepo: MongoRepository<RequestContributor>,
+    @InjectRepository(User)
+    private userRepo: MongoRepository<User>,
   ) {}
 
   async create(user, body: CreateListDto) {
@@ -50,6 +53,17 @@ export class ListService {
         'author.username': { $regex: new RegExp(user.username, 'i') },
       },
     });
+  }
+
+  async getMyFavoritesList(user, search) {
+    const userDoc = await this.userRepo.findOne({ username: user.username });
+    if (!userDoc) {
+      throw new BadRequestException('Username not found');
+    }
+
+    const listIds = userDoc.favoritesList.map((listid) => ObjectID(listid));
+
+    return await this.listRepo.find({ where: { _id: { $in: listIds } } });
   }
 
   async findById(user, id: string) {
@@ -165,7 +179,10 @@ export class ListService {
   }
 
   async voteStar(user, body: VoteStarDto) {
-    const list = await this.listRepo.findOne({ name: body.name });
+    const list = await this.listRepo.findOne({
+      where: { _id: ObjectID(body.listId) },
+    });
+    console.log('list', list);
     if (!list) {
       throw new BadRequestException('List not found');
     }

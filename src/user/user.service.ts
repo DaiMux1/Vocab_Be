@@ -20,12 +20,20 @@ export class UserService {
   async create(body: CreateUserDto) {
     const user = await this.userRepo.create(body);
     user.role = 0;
-    user.status = 1;
+    user.status = 0;
     return await this.userRepo.save(user);
   }
 
   async findAccountByUsername(username: string) {
     return await this.userRepo.findOne({ username });
+  }
+
+  async findAccoutByEmail(email: string) {
+    return await this.userRepo.findOne({ email });
+  }
+
+  async save(user) {
+    return await this.userRepo.save(user);
   }
 
   async addManager(username: string) {
@@ -76,6 +84,23 @@ export class UserService {
 
     if (!u.favoritesList.includes(listId)) {
       u.favoritesList.push(listId);
+    }
+
+    return await this.userRepo.save(u);
+  }
+
+  async removeFavoriteList(user, listId) {
+    const u = await this.userRepo.findOne({ username: user.username });
+    if (!u) {
+      throw new BadRequestException('Username not found');
+    }
+
+    if (!u.favoritesList) {
+      u.favoritesList = [];
+    }
+
+    if (u.favoritesList.includes(listId)) {
+      u.favoritesList = u.favoritesList.filter((list) => list !== listId);
     }
 
     return await this.userRepo.save(u);

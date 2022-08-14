@@ -63,6 +63,11 @@ export class ListController {
     return this.listService.getMyList(req.user, search);
   }
 
+  @Get('my-favorites-list')
+  getMyFavoritesList(@Req() req, @Query('search') search: string) {
+    return this.listService.getMyFavoritesList(req.user, search);
+  }
+
   @Get('search-public')
   search(@Query() query: SearchDto) {
     return this.listService.search(query);
@@ -89,8 +94,9 @@ export class ListController {
     return this.listService.findById(req.user, id);
   }
 
-  @Patch('star')
+  @Post('star')
   vote(@Req() req, @Body() body: VoteStarDto) {
+    console.log('body', body);
     return this.listService.voteStar(req.user, body);
   }
 
